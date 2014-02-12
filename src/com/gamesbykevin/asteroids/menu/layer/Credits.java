@@ -18,7 +18,7 @@ public final class Credits extends Layer implements LayerRules
         setImage(engine.getResources().getMenuImage(MenuImage.Keys.Credits));
         
         //should we force the user to view this layer
-        setForce(false);
+        setForce(true);
         
         //when the layer is complete should we transition to the next or pause
         setPause(false);
@@ -27,7 +27,7 @@ public final class Credits extends Layer implements LayerRules
         setNextLayer(CustomMenu.LayerKey.MainTitle);
         
         //what is the duration of the current layer
-        setTimer(new Timer(Timers.toNanoSeconds(6000L)));
+        setTimer(new Timer(Timers.toNanoSeconds(5000L)));
         
         //no options here to setup
     }

@@ -18,7 +18,7 @@ public class GameAudio extends AudioManager
     
     public enum Keys
     {
-        
+        Thrusters, Crash, Explosion, Fire
     }
     
     public GameAudio() throws Exception

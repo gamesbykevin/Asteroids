@@ -8,12 +8,14 @@ import com.gamesbykevin.asteroids.engine.Engine;
 import com.gamesbykevin.asteroids.menu.CustomMenu.*;
 import com.gamesbykevin.asteroids.menu.option.*;
 import com.gamesbykevin.asteroids.meteor.Meteor;
-import com.gamesbykevin.asteroids.resources.*;
-import com.gamesbykevin.asteroids.resources.GameImage.Keys;
+import com.gamesbykevin.asteroids.resources.GameAudio;
+import com.gamesbykevin.asteroids.resources.MenuImage;
+import com.gamesbykevin.asteroids.resources.Resources;
 import com.gamesbykevin.asteroids.ship.*;
 import java.awt.Color;
 
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +66,9 @@ public final class Manager implements IManager
     //our timer for race mode
     private Timer timer;
     
+    //background image of space
+    private Image background;
+    
     /**
      * Constructor for Manager, this is the point where we load any menu option configurations
      * @param engine
@@ -71,6 +76,9 @@ public final class Manager implements IManager
      */
     public Manager(final Engine engine) throws Exception
     {
+        //get the background
+        this.background = engine.getResources().getMenuImage(MenuImage.Keys.OptionBackground);
+        
         //get the size of the screen
         Rectangle screen = engine.getMain().getScreen();
         
@@ -353,7 +361,7 @@ public final class Manager implements IManager
         checkMode(engine);
         
         //finally perform cleanup of marked object
-        cleanupObjects();
+        cleanupObjects(engine.getResources());
     }
     
     /**
@@ -586,7 +594,7 @@ public final class Manager implements IManager
     /**
      * Remove any bullets, meteors, ships that are marked as dead.
      */
-    private void cleanupObjects()
+    private void cleanupObjects(final Resources resources)
     {
         for (int i=0; i < getBullets().size(); i++)
         {
@@ -598,21 +606,31 @@ public final class Manager implements IManager
             }
         }
         
+        boolean anyDead = false;
+        
         for (int i=0; i < getMeteors().size(); i++)
         {
             //if the bullet is dead remove it
             if (getMeteors().get(i).isDead())
             {
+                anyDead = true;
                 getMeteors().remove(i);
                 i--;
             }
         }
+        
+        if (anyDead)
+            resources.playGameAudio(GameAudio.Keys.Explosion, false);
+        
+        anyDead = false;
         
         for (int i=0; i < getShips().size(); i++)
         {
             //if the bullet is dead remove it
             if (getShips().get(i).isDead())
             {
+                anyDead = true;
+                
                 if (getShips().get(i).getLives() > 0)
                 {
                     //deduct a life
@@ -626,6 +644,9 @@ public final class Manager implements IManager
                 }
             }
         }
+        
+        if (anyDead)
+            resources.playGameAudio(GameAudio.Keys.Crash, false);
     }
     
     /**
@@ -635,6 +656,8 @@ public final class Manager implements IManager
     @Override
     public void render(final Graphics graphics)
     {
+        graphics.drawImage(background, gameWindow.x, gameWindow.y, gameWindow.width, gameWindow.height, null);
+        
         for (Meteor meteor : getMeteors())
         {
             meteor.render(graphics);
@@ -667,6 +690,7 @@ public final class Manager implements IManager
             case Race:
                 graphics.setColor(getShips().get(0).getColor());
                 graphics.drawString("Hum Kills: " + getShips().get(0).getKills(), 15, 25);
+                graphics.setColor(Color.WHITE);
                 graphics.drawString("Time: " + timer.getDescRemaining(Timers.FORMAT_7), 200, 25);
                 graphics.setColor(getShips().get(1).getColor());
                 graphics.drawString("Cpu Kills: " + getShips().get(1).getKills(), 375, 25);

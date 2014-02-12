@@ -32,7 +32,7 @@ public final class CustomMenu extends Menu implements IElement
         NewGame, ExitGame, NewGameConfim, NewGameDeny, ExitGameConfirm, ExitGameDeny, 
         
         Difficulty, Lives, Mode,
-    } 
+    }
     
     //unique key to indentify each Layer
     public enum LayerKey 
@@ -40,7 +40,7 @@ public final class CustomMenu extends Menu implements IElement
         Title, Credits, MainTitle, Options, OptionsInGame, 
         NewGameConfirm, ExitGameConfirm, NoFocus, StartGame, NewGameConfirmed, 
         Controls1,  
-        Instructions1, Instructions2, 
+        Instructions1, Instructions2, Instructions3, Instructions4, 
     }
     
     /**
@@ -73,6 +73,8 @@ public final class CustomMenu extends Menu implements IElement
         super.add(LayerKey.Controls1,       new Controls1(engine));
         super.add(LayerKey.Instructions1,   new Instructions1(engine));
         super.add(LayerKey.Instructions2,   new Instructions2(engine));
+        super.add(LayerKey.Instructions3,   new Instructions3(engine));
+        super.add(LayerKey.Instructions4,   new Instructions4(engine));
         super.add(LayerKey.OptionsInGame,   new OptionsInGame(engine));
         super.add(LayerKey.NewGameConfirm,  new NewGameConfirm(engine));
         super.add(LayerKey.ExitGameConfirm, new ExitGameConfirm(engine));

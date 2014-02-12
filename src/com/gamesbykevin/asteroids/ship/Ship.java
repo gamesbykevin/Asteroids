@@ -7,6 +7,7 @@ import com.gamesbykevin.asteroids.bullet.Bullet;
 import com.gamesbykevin.asteroids.engine.Engine;
 import com.gamesbykevin.asteroids.levelobject.LevelObject;
 import com.gamesbykevin.asteroids.meteor.Meteor;
+import com.gamesbykevin.asteroids.resources.GameAudio;
 
 import java.awt.Color;
 import java.awt.Graphics;

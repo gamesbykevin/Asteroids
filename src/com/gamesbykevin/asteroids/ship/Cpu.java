@@ -3,6 +3,7 @@ package com.gamesbykevin.asteroids.ship;
 import com.gamesbykevin.asteroids.engine.Engine;
 import com.gamesbykevin.asteroids.levelobject.LevelObject;
 import com.gamesbykevin.asteroids.menu.option.Mode;
+import com.gamesbykevin.asteroids.resources.GameAudio;
 import com.gamesbykevin.asteroids.shared.IElement;
 
 import java.awt.Color;
@@ -87,6 +88,9 @@ public class Cpu extends Ship implements IElement
             }
         }
         
+        //check if we have been speeding previously
+        final boolean previousSpeeding = hasSpeeding();
+        
         //don't speed away yet
         setSpeeding(false);
 
@@ -127,11 +131,28 @@ public class Cpu extends Ship implements IElement
                         
                         //are we able to fire a bullet
                         if (hasShot(engine.getManager().getBullets()))
+                        {
+                            if (engine.getManager().getBullets().isEmpty())
+                            {
+                                //play sound effect
+                                engine.getResources().playGameAudio(GameAudio.Keys.Fire, false);
+                            }
+                            
+                            //add bullet
                             addBullet(engine.getManager().getBullets());
+                        }
                         
                         break;
                 }
             }
+            
+            //if we weren't speeding and are now play effect
+            if (!previousSpeeding && hasSpeeding())
+                engine.getResources().playGameAudio(GameAudio.Keys.Thrusters, true);
+            
+            //if we were speeding and are no more stop sound
+            if (previousSpeeding && !hasSpeeding())
+                engine.getResources().stopGameAudio(GameAudio.Keys.Thrusters);
             
             //reset the target and action
             setTarget(null, null);

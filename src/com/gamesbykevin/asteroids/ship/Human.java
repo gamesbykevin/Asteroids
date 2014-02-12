@@ -1,9 +1,10 @@
 package com.gamesbykevin.asteroids.ship;
 
 import com.gamesbykevin.asteroids.engine.Engine;
+import com.gamesbykevin.asteroids.resources.GameAudio;
 import com.gamesbykevin.asteroids.shared.IElement;
-import java.awt.Color;
 
+import java.awt.Color;
 import java.awt.event.KeyEvent;
 
 public class Human extends Ship implements IElement
@@ -33,6 +34,10 @@ public class Human extends Ship implements IElement
         
         if (engine.getKeyboard().hasKeyReleased(KeyEvent.VK_UP))
         {
+            //stop sound effect
+            engine.getResources().stopGameAudio(GameAudio.Keys.Thrusters);
+            
+            //no longer speeding
             setSpeeding(false);
             
             engine.getKeyboard().removeKeyPressed(KeyEvent.VK_UP);
@@ -48,15 +53,30 @@ public class Human extends Ship implements IElement
             super.setAngle(super.getAngle() + TURN_RATE);
         
         //was up pressed on the keyboard
-        if (engine.getKeyboard().hasKeyPressed(KeyEvent.VK_UP))
+        if (engine.getKeyboard().hasKeyPressed(KeyEvent.VK_UP) && !hasSpeeding())
+        {
+            //play sound effect
+            engine.getResources().playGameAudio(GameAudio.Keys.Thrusters, true);
+            
+            //we are speeding
             setSpeeding(true);
+        }
         
         //was space bar pressed and we are not speeding
         if (engine.getKeyboard().hasKeyPressed(KeyEvent.VK_SPACE) && !hasSpeeding())
         {
             //are we able to fire a bullet
             if (hasShot(engine.getManager().getBullets()))
+            {
+                if (engine.getManager().getBullets().isEmpty())
+                {
+                    //play sound effect
+                    engine.getResources().playGameAudio(GameAudio.Keys.Fire, false);
+                }
+                
+                //add bullet
                 addBullet(engine.getManager().getBullets());
+            }
             
             //no longer pressing space
             engine.getKeyboard().removeKeyPressed(KeyEvent.VK_SPACE);

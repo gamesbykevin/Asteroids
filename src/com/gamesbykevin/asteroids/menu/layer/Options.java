@@ -17,7 +17,7 @@ public final class Options extends Layer implements LayerRules
     public Options(final Engine engine) throws Exception
     {
         //the layer will have the given transition and screen size
-        super(Layer.Type.NONE, engine.getMain().getScreen());
+        super(Layer.Type.SCROLL_HORIZONTAL_WEST_REPEAT, engine.getMain().getScreen());
         
         //this layer will have a title at the top
         setTitle("Options");
@@ -26,7 +26,7 @@ public final class Options extends Layer implements LayerRules
         setImage(engine.getResources().getMenuImage(MenuImage.Keys.OptionBackground));
         
         //what is the duration of the current layer
-        setTimer(new Timer(Timers.toNanoSeconds(5000L)));
+        setTimer(new Timer(Timers.toNanoSeconds(10000L)));
         
         //should we force the user to view this layer
         setForce(false);

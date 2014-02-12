@@ -24,8 +24,7 @@ public class MenuImage extends ImageManager
         OptionBackground, 
         Mouse, MouseDrag, 
         Controls1,  
-        Instructions1,  
-        Instructions2,  
+        Instructions1, Instructions2, Instructions3, Instructions4, 
     }
     
     public MenuImage() throws Exception

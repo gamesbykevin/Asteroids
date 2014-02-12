@@ -5,18 +5,18 @@ import com.gamesbykevin.framework.menu.Layer;
 import com.gamesbykevin.asteroids.engine.Engine;
 import com.gamesbykevin.asteroids.menu.CustomMenu;
 
-public final class Instructions2 extends Layer implements LayerRules
+public final class Instructions3 extends Layer implements LayerRules
 {
-    public Instructions2(final Engine engine)
+    public Instructions3(final Engine engine)
     {
         //the layer will have the given transition and screen size
         super(Layer.Type.NONE, engine.getMain().getScreen());
         
         //set the background image of the Layer
-        setImage(engine.getResources().getMenuImage(MenuImage.Keys.Instructions2));
+        setImage(engine.getResources().getMenuImage(MenuImage.Keys.Instructions3));
         
         //what is the next layer
-        setNextLayer(CustomMenu.LayerKey.Instructions3);
+        setNextLayer(CustomMenu.LayerKey.Instructions4);
         
         //should we force the user to view this layer
         setForce(false);

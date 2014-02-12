@@ -6,6 +6,7 @@ import com.gamesbykevin.asteroids.engine.Engine;
 import com.gamesbykevin.asteroids.levelobject.LevelObject;
 import com.gamesbykevin.asteroids.menu.option.Mode;
 import com.gamesbykevin.asteroids.meteor.Meteor;
+import com.gamesbykevin.asteroids.resources.GameAudio;
 import com.gamesbykevin.asteroids.shared.IElement;
 import com.gamesbykevin.asteroids.ship.Ship;
 

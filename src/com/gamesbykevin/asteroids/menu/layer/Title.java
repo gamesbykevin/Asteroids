@@ -19,7 +19,7 @@ public final class Title extends Layer implements LayerRules
         super.setImage(engine.getResources().getMenuImage(MenuImage.Keys.TitleScreen));
 
         //we will force this layer to show
-        setForce(false);
+        setForce(true);
         
         //we do not want to pause this layer once it completes
         setPause(false);
@@ -28,7 +28,7 @@ public final class Title extends Layer implements LayerRules
         setNextLayer(CustomMenu.LayerKey.Credits);
         
         //this layer will be active for 2 seconds
-        setTimer(new Timer(Timers.toNanoSeconds(2000L)));
+        setTimer(new Timer(Timers.toNanoSeconds(2500L)));
         
         //no options here to setup
     }
