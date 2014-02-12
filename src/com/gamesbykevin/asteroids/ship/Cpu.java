@@ -1,9 +1,11 @@
 package com.gamesbykevin.asteroids.ship;
 
-import com.gamesbykevin.asteroids.bullet.Bullet;
 import com.gamesbykevin.asteroids.engine.Engine;
-import com.gamesbykevin.asteroids.meteor.Meteor;
+import com.gamesbykevin.asteroids.levelobject.LevelObject;
+import com.gamesbykevin.asteroids.menu.option.Mode;
 import com.gamesbykevin.asteroids.shared.IElement;
+
+import java.awt.Color;
 
 public class Cpu extends Ship implements IElement
 {
@@ -11,13 +13,13 @@ public class Cpu extends Ship implements IElement
     private static final double FIRE_RANGE_RATE = 10;
     
     //determine when we are too close and need to avoid death
-    private static final double DEATH_RANGE_RATE = FIRE_RANGE_RATE - 4;
+    private static final double DEATH_RANGE_RATE = FIRE_RANGE_RATE - 5;
     
     //the cpu will turn faster than average
-    private static final double TURN_RATE_BOOST = 7;
+    private static final double TURN_RATE_BOOST = 6;
     
     //the meteor we are targeting
-    private Meteor target;
+    private LevelObject target;
     
     //the angle destination we want to turn towards
     private double destination;
@@ -38,12 +40,9 @@ public class Cpu extends Ship implements IElement
     //the current assignent for the cpu
     private Action action; 
     
-    public Cpu(final double x, final double y)
+    public Cpu(final int bulletLimit)
     {
-        super();
-        
-        //set the start location
-        super.setLocation(x, y);
+        super(Color.YELLOW, bulletLimit);
         
         //set speed
         super.setSpeedRate(DEFAULT_SPEED_RATE);
@@ -58,59 +57,32 @@ public class Cpu extends Ship implements IElement
         //shortest distance found, because we want to avoid the closest
         double shortest = Math.pow((getSize() * DEATH_RANGE_RATE), (getSize() * DEATH_RANGE_RATE));
         
-        //check if any meteors are within firing range or too close
-        for (Meteor meteor : engine.getManager().getMeteors())
+        //if we are playing race mode we target the meteors
+        if (engine.getManager().getMode() == Mode.Selections.Race || engine.getManager().getMode() == Mode.Selections.Cooperative)
         {
-            //calculate the distance
-            final double distance = super.getDistance(meteor);
-            
-            //if we are too close that we are in danger
-            if (!hasInvincibility() && distance <= meteor.getSize() * DEATH_RANGE_RATE || !hasInvincibility() && distance <= getSize() * DEATH_RANGE_RATE)
+            //check if any meteors are within firing range or too close
+            for (LevelObject opponent : engine.getManager().getMeteors())
             {
-                //is this the closest
-                if (distance <= shortest)
-                {
-                    //we have the new shorter distance
-                    shortest = distance;
-                    
-                    //set action and target
-                    setTarget(Action.Escape, meteor);
-                }
+                shortest = checkOpponent(opponent, shortest, hasShot(engine.getManager().getBullets()));
             }
-            else
+        }
+        else
+        {
+            //we are targeting the other ship
+            for (Ship opponent : engine.getManager().getShips())
             {
-                //escape has priority over attacking so we can't continue
-                if (action == Action.Escape)
+                //we don't want to attack our own ship
+                if (opponent.getId() == getId())
                     continue;
-                    
-                //if we are within firing range
-                if (distance <= meteor.getSize() * FIRE_RANGE_RATE || distance <= getSize() * FIRE_RANGE_RATE)
+                
+                //if our opponent is invincible avoid them
+                if (opponent.hasInvincibility())
                 {
-                    //is this the closest
-                    if (distance <= shortest)
-                    {
-                        //we have the new shorter distance
-                        shortest = distance;
-
-                        //set action and target
-                        setTarget(Action.Attack, meteor);
-                    }
+                    setTarget(Action.Approach, opponent);
                 }
                 else
                 {
-                    //make sure no action has been set
-                    if (action == null || action == Action.Approach)
-                    {
-                        //is this the closest
-                        if (distance <= shortest)
-                        {
-                            //we have the new shorter distance
-                            shortest = distance;
-
-                            //set action and target
-                            setTarget(Action.Approach, meteor);
-                        }
-                    }
+                    shortest = checkOpponent(opponent, shortest, hasShot(engine.getManager().getBullets()));
                 }
             }
         }
@@ -154,11 +126,9 @@ public class Cpu extends Ship implements IElement
                     case Attack:
                         
                         //are we able to fire a bullet
-                        if (engine.getManager().getBullets().size() < BULLET_LIMIT)
-                        {
-                            //add bullet to list
-                            engine.getManager().getBullets().add(new Bullet(this));
-                        }
+                        if (hasShot(engine.getManager().getBullets()))
+                            addBullet(engine.getManager().getBullets());
+                        
                         break;
                 }
             }
@@ -168,7 +138,77 @@ public class Cpu extends Ship implements IElement
         }
     }
     
-    private void setTarget(final Action action, final Meteor target)
+    /**
+     * Check this opponent to determine what is the next target/action
+     * @param opponent Opponent to check
+     * @param shortest The shortest distance found so far
+     * @param hasShot Do we have the ability to shoot
+     * @return the distance of the shortest path found
+     */
+    private double checkOpponent(final LevelObject opponent, double shortest, final boolean hasShot)
+    {
+        //calculate the distance
+        final double distance = super.getDistance(opponent);
+
+        //if we aren't invisible or if it will be running out soon and we are too close to opponent
+        if ((!hasInvincibility() || isInvisibleAlmostOver()) && (distance <= opponent.getSize() * DEATH_RANGE_RATE || distance <= getSize() * DEATH_RANGE_RATE))
+        {
+            //is this the closest
+            if (distance <= shortest)
+            {
+                //we have the new shorter distance
+                shortest = distance;
+
+                //set action and target
+                setTarget(Action.Escape, opponent);
+            }
+        }
+        else
+        {
+            //escape has priority over attacking so we can't continue
+            if (action == Action.Escape)
+                return shortest;
+
+            //if we are within firing range
+            if (distance <= opponent.getSize() * FIRE_RANGE_RATE || distance <= getSize() * FIRE_RANGE_RATE)
+            {
+                //is this the closest
+                if (distance <= shortest)
+                {
+                    //we have the new shorter distance
+                    shortest = distance;
+
+                    //set action and target
+                    setTarget(Action.Attack, opponent);
+                }
+            }
+            else
+            {
+                //make sure no action has been set
+                if (action == null || action == Action.Approach)
+                {
+                    //we don't want to approach if we don't have a shot
+                    if (hasShot)
+                    {
+                        //is this the closest
+                        if (distance <= shortest)
+                        {
+                            //we have the new shorter distance
+                            shortest = distance;
+
+                            //set action and target
+                            setTarget(Action.Approach, opponent);
+                        }
+                    }
+                }
+            }
+        }
+        
+        //return shortest distance found
+        return shortest;
+    }
+    
+    private void setTarget(final Action action, final LevelObject target)
     {
         this.action = action;
         this.target = target;
@@ -182,7 +222,15 @@ public class Cpu extends Ship implements IElement
         //turn towards our destination
         if (getAngle() < getDestination())
         {
-            setAngle(getAngle() + (TURN_RATE * TURN_RATE_BOOST));
+            //if escaping we want the turning to be faster to allow escape
+            if (action == Action.Escape)
+            {
+                setAngle(getAngle() + (TURN_RATE * TURN_RATE_BOOST));
+            }
+            else
+            {
+                setAngle(getAngle() + TURN_RATE);
+            }
 
             if (getAngle() > getDestination())
                 setAngle(getDestination());
@@ -191,8 +239,16 @@ public class Cpu extends Ship implements IElement
         //turn towards our destination
         if (getAngle() > getDestination())
         {
-            setAngle(getAngle() - (TURN_RATE * TURN_RATE_BOOST));
-
+            //if escaping we want the turning to be faster to allow escape
+            if (action == Action.Escape)
+            {
+                setAngle(getAngle() - (TURN_RATE * TURN_RATE_BOOST));
+            }
+            else
+            {
+                setAngle(getAngle() - TURN_RATE);
+            }
+            
             if (getAngle() < getDestination())
                 setAngle(getDestination());
         }

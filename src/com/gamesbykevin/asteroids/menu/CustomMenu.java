@@ -31,6 +31,7 @@ public final class CustomMenu extends Menu implements IElement
         Sound, FullScreen, StartGame, Options, Controls, Instructions, Credits, GoBack, Resume, 
         NewGame, ExitGame, NewGameConfim, NewGameDeny, ExitGameConfirm, ExitGameDeny, 
         
+        Difficulty, Lives, Mode,
     } 
     
     //unique key to indentify each Layer

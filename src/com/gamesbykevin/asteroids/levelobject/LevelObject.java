@@ -6,6 +6,7 @@ import com.gamesbykevin.asteroids.engine.Engine;
 
 import java.awt.Graphics;
 import java.awt.Polygon;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,9 +49,9 @@ public abstract class LevelObject extends Sprite
     }
     
     /**
-     * Un-flag this object
+     * Un-flag the death
      */
-    protected void unmarkDead()
+    public void unmarkDead()
     {
         this.dead = false;
     }
@@ -165,32 +166,57 @@ public abstract class LevelObject extends Sprite
                 boundary.get(index).xpoints[i] = (int)(getX() + newX);
                 boundary.get(index).ypoints[i] = (int)(getY() + newY);
             }
-            
-            //call this to reset any cached data
-            boundary.get(index).invalidate();
         }
     }
     
     /**
-     * Do the polygons collide
+     * Do the polygons collide?
      * @param p1 polygon
      * @param p2 polygon
-     * @return true if any of p1 (x,y) points are contained within p2, false otherwise
+     * @return true if p1 and p2 intersect each other
      */
     protected boolean hasCollision(final Polygon p1, final Polygon p2)
     {
+        for (int i=0; i < p2.xpoints.length; i++)
+        {
+            if (contains(p1, p2.xpoints[i], p2.ypoints[i]))
+                return true;
+        }
+        
         for (int i=0; i < p1.xpoints.length; i++)
         {
-            final int x = p1.xpoints[i];
-            final int y = p1.ypoints[i];
-            
-            if (p2.contains(x, y))
+            if (contains(p2, p1.xpoints[i], p1.ypoints[i]))
                 return true;
         }
         
         return false;
     }
     
+    /**
+     * Is the (x, y) point inside the polygon
+     * @param p Body object where we need to check if there is a point inside.
+     * @param x x-point
+     * @param y y-point
+     * @return true if the point is inside the polygon, false otherwise
+     */
+    private boolean contains(final Polygon p, final int x, final int y)
+    {
+        //is the point inside
+        boolean inside = false;
+        
+        for ( int i = 0, j = p.xpoints.length - 1 ; i < p.xpoints.length ; j = i++ )
+        {
+            if ((p.ypoints[i] > y) != (p.ypoints[j] > y) &&
+                 x < (p.xpoints[j] - p.xpoints[i]) * (y - p.ypoints[i]) / (p.ypoints[j] - p.ypoints[i]) + p.xpoints[i])
+            {
+                //odd is inside, even is out
+                inside = !inside;
+            }
+        }
+
+        return inside;
+    }
+
     /**
      * Does our level object intersect with the given parameter
      * @param object The object we want to check for collision
@@ -203,9 +229,6 @@ public abstract class LevelObject extends Sprite
             for (Polygon p2 : object.getBoundaries())
             {
                 if (hasCollision(p1, p2))
-                    return true;
-                
-                if (hasCollision(p2, p1))
                     return true;
             }
         }

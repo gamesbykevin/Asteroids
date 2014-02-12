@@ -4,6 +4,7 @@ import com.gamesbykevin.framework.util.*;
 
 import com.gamesbykevin.asteroids.engine.Engine;
 import com.gamesbykevin.asteroids.levelobject.LevelObject;
+import com.gamesbykevin.asteroids.menu.option.Mode;
 import com.gamesbykevin.asteroids.meteor.Meteor;
 import com.gamesbykevin.asteroids.shared.IElement;
 import com.gamesbykevin.asteroids.ship.Ship;
@@ -24,8 +25,8 @@ public final class Bullet extends LevelObject implements IElement
     //how big is the bullet
     private static final int SIZE = 1;
     
-    //how long should the bullet be active if no collision in milliseconds
-    private final long BULLET_LIFE_DURATION = 2000;
+    //how long should the bullet be active if no collision in nanoseconds
+    private final long BULLET_LIFE_DURATION = Timers.toNanoSeconds(1500L);
     
     //our timer to track life
     private final Timer timer;
@@ -33,6 +34,9 @@ public final class Bullet extends LevelObject implements IElement
     //relative coordinates for the body
     private static final int[] XPOINTS_BODY = {-SIZE, SIZE, SIZE, -SIZE};
     private static final int[] YPOINTS_BODY = {-SIZE, -SIZE, SIZE, SIZE};
+    
+    //a bullet will have a different color depending on the source where it came from
+    private final Color color;
     
     /**
      * Create a new bullet taking information from it's parent ship
@@ -47,8 +51,11 @@ public final class Bullet extends LevelObject implements IElement
         super.setX(ship.getX() - (SIZE / 2));
         super.setY(ship.getY() - (SIZE / 2));
         
+        //store the ship's color
+        this.color = ship.getColor();
+        
         //create new timer with specified duration
-        this.timer = new Timer(Timers.toNanoSeconds(BULLET_LIFE_DURATION));
+        this.timer = new Timer(BULLET_LIFE_DURATION);
         
         //add the body
         super.add(XPOINTS_BODY, YPOINTS_BODY);
@@ -65,25 +72,57 @@ public final class Bullet extends LevelObject implements IElement
         if (isDead())
             return;
         
-        //check for meteor collision
-        for (Meteor meteor : engine.getManager().getMeteors())
+        //if versus mode we will check if the bullets hit the ships
+        if (engine.getManager().getMode() == Mode.Selections.Vs)
         {
-            if (hasCollision(meteor))
+            for (Ship ship : engine.getManager().getShips())
             {
-                //flag the meteor and bullet to die
-                markDead();
-                meteor.markDead();
+                //don't check if the ship is invincible
+                if (ship.hasInvincibility())
+                    continue;
+                
+                //if the bullet came from the ship don't check for collision
+                if (ship.getId() == getParentId())
+                    continue;
+                
+                //if the bullet hit the ship body
+                if (hasCollision(getBoundaries().get(0), ship.getBoundaries().get(1)))
+                {
+                    //flag the bullet to be removed
+                    markDead();
 
-                //split up the meteor
-                engine.getManager().addMeteors(meteor, engine.getRandom());
-
-                //don't check any meteors until the next bullet
-                break;
+                    //mark the ship as dead
+                    ship.markDead();
+                }
             }
         }
+        else
+        {
+            //check for meteor collision
+            for (Meteor meteor : engine.getManager().getMeteors())
+            {
+                if (hasCollision(meteor))
+                {
+                    //flag the bullet to be removed
+                    markDead();
 
+                    //flag the meteor to be removed
+                    meteor.markDead();
+
+                    //split up the meteor
+                    engine.getManager().addMeteors(meteor, engine.getRandom());
+
+                    //credit the kill
+                    engine.getManager().getShip(getParentId()).addKill();
+
+                    //don't check any more meteors until the next bullet
+                    break;
+                }
+            }
+        }
+        
         //update x,y coordinate
-        updateCoordinates(engine.getMain().getScreen());
+        updateCoordinates(engine.getManager().getGameWindow());
         
         if (timer.hasTimePassed())
             markDead();
@@ -97,7 +136,7 @@ public final class Bullet extends LevelObject implements IElement
     {
         for (Polygon p : getBoundaries())
         {
-            graphics.setColor(Color.YELLOW);
+            graphics.setColor(color);
             graphics.fillPolygon(p);
         }
     }

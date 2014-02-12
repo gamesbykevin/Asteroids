@@ -27,6 +27,8 @@ public final class Meteor extends LevelObject implements IElement
     //the rate at which we can turn
     private final double TURN_RATE = .1;
     
+    private Boolean rotateClockwise;
+    
     public Meteor(final double x, final double y, final Random random)
     {
         this(x, y, getRandomVelocity(random), getRandomDirection(random), START_SIZE, START_HITS);
@@ -56,10 +58,10 @@ public final class Meteor extends LevelObject implements IElement
         super.setVelocityX(v * Math.cos(d));
         super.setVelocityY(v * Math.sin(d));
         
-        //set original coordinates
-        final int[] xpoints = {-getSize(), getSize(), getSize(), -getSize()};
-        final int[] ypoints = {-getSize(), -getSize(), getSize(), getSize()};
-    
+        //set original coordinates for the body
+        final int[] xpoints = {-getSize(), 0, getSize(), getSize(), 0, -getSize()};
+        final int[] ypoints = {-getSize(), (int)(-getSize() * 1.5), -getSize(), getSize(), (int)(getSize() * 1.5), getSize()};
+        
         //add body
         super.add(xpoints, ypoints);
     }
@@ -106,17 +108,28 @@ public final class Meteor extends LevelObject implements IElement
                 tmp.setVelocityY(dy);
 
                 //update the meteor location
-                updateCoordinates(engine.getMain().getScreen());
+                updateCoordinates(engine.getManager().getGameWindow());
 
                 break;
             }
         }
         
+        //determine if we rotate left or right
+        if (rotateClockwise == null)
+            rotateClockwise = engine.getRandom().nextBoolean();
+        
         //rotate the meteor automatically
-        setAngle(getAngle() + TURN_RATE);
+        if (rotateClockwise)
+        {
+            setAngle(getAngle() + TURN_RATE);
+        }
+        else
+        {
+            setAngle(getAngle() - TURN_RATE);
+        }
         
         //move and update coordinates
-        updateCoordinates(engine.getMain().getScreen());
+        updateCoordinates(engine.getManager().getGameWindow());
     }
     
     @Override
@@ -124,8 +137,10 @@ public final class Meteor extends LevelObject implements IElement
     {
         for (Polygon p : getBoundaries())
         {
-            graphics.setColor(Color.GRAY);
+            graphics.setColor(Color.LIGHT_GRAY);
             graphics.fillPolygon(p);
+            graphics.setColor(Color.ORANGE);
+            graphics.drawPolygon(p);
         }
     }
 }

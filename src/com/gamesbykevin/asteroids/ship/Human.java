@@ -1,19 +1,16 @@
 package com.gamesbykevin.asteroids.ship;
 
-import com.gamesbykevin.asteroids.bullet.Bullet;
 import com.gamesbykevin.asteroids.engine.Engine;
 import com.gamesbykevin.asteroids.shared.IElement;
+import java.awt.Color;
 
 import java.awt.event.KeyEvent;
 
 public class Human extends Ship implements IElement
 {
-    public Human(final double x, final double y)
+    public Human(final int bulletLimit)
     {
-        super();
-        
-        //set the start location
-        super.setLocation(x, y);
+        super(Color.MAGENTA, bulletLimit);
     }
     
     @Override
@@ -58,16 +55,8 @@ public class Human extends Ship implements IElement
         if (engine.getKeyboard().hasKeyPressed(KeyEvent.VK_SPACE) && !hasSpeeding())
         {
             //are we able to fire a bullet
-            if (engine.getManager().getBullets().size() < BULLET_LIMIT)
-            {
-                //create new bullet
-                Bullet bullet = new Bullet(this);
-                
-                //mark the bullet where it came from
-                bullet.setParentId(this.getId());
-                
-                engine.getManager().getBullets().add(bullet);
-            }
+            if (hasShot(engine.getManager().getBullets()))
+                addBullet(engine.getManager().getBullets());
             
             //no longer pressing space
             engine.getKeyboard().removeKeyPressed(KeyEvent.VK_SPACE);

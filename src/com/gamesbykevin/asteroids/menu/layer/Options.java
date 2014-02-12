@@ -40,12 +40,11 @@ public final class Options extends Layer implements LayerRules
         Audio audio = engine.getResources().getMenuAudio(MenuAudio.Keys.OptionChange);
         
         //add options
-        
-        //don't add sound option for now
-        //super.add(OptionKey.Sound,                  new Sound(audio));
+        super.add(OptionKey.Difficulty, new Difficulty(audio));
+        super.add(OptionKey.Lives,      new Lives(audio));
+        super.add(OptionKey.Mode,       new Mode(audio));
         
         super.add(OptionKey.FullScreen,             new FullScreen(audio));
         super.add(OptionKey.GoBack,                 new OptionsGoBack());
-        
     }
 }
